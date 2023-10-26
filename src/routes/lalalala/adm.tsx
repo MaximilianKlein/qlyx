@@ -61,9 +61,10 @@ export default (app: any) => app
     const { questionId } = body;
     // Obtain the current timestamp from the server
     const now = new Date();
+    const nowUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds()));
 
     // Update the startTime field with the server's timestamp
-    await db.update(question).set({ startTime: now }).where(eq(question.questionId, questionId));
+    await db.update(question).set({ startTime: nowUtc }).where(eq(question.questionId, questionId));
 
     const existingQuestion = (await db.select().from(question).where(eq(question.questionId, questionId))).at(0);
     if (existingQuestion) {

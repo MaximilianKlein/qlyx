@@ -11,23 +11,22 @@ export default (app: any) =>
   app
     .get("/", async ({ cookie, set, query }: any) => {
       try {
-        const userId = cookie.name; // Adjust this if the userId is stored differently in the cookie
+        const userId = cookie.userId; // Adjust this if the userId is stored differently in the cookie
         const clientQuestion = query["client-question"];
-        const result = (
-          await db
+        const result = await db
             .select()
             .from(question)
-            .leftJoin(answer, eq(question.questionId, answer.questionId))
-            .where(
-              and(
-                isNotNull(question.startTime),
-                or(isNull(answer.userId), eq(answer.userId, userId ?? ""))
-              )
-            )
+            .leftJoin(answer, and(
+                eq(question.questionId, answer.questionId),
+                eq(answer.userId, userId)
+            ))
+            .where(isNotNull(question.startTime))
             .orderBy(desc(question.startTime))
-        ).at(0);
-        const activeQuestion = result?.question;
-        const activeAnswer = result?.answer;
+            .limit(1);
+
+        const activeQuestion = result[0]?.question;
+        const activeAnswer = result[0]?.answer;
+
         if (!activeQuestion || !activeQuestion.startTime) {
           return (
             <div
@@ -39,6 +38,7 @@ export default (app: any) =>
             </div>
           );
         }
+
         const questionIndex = activeQuestion.questionId;
         const endTime = new Date(
           activeQuestion.startTime.getTime() + activeQuestion.duration * 1000
@@ -60,7 +60,7 @@ export default (app: any) =>
             CLICK
           </div>
         );
-        const content = cookie.name ? (
+        const content = cookie.userId ? (
           clientQuestion == questionIndex && active ? (
             <Timer remainingTimer={remainingTimer} />
           ) : (
@@ -93,10 +93,9 @@ export default (app: any) =>
       "/",
       async ({ body, cookie, set }: any) => {
         const { answer: selectedAnswer, questionIndex } = body;
-        console.log("hello!");
 
         // Extract userId from the cookie
-        const userId = cookie.name; // Adjust this if the userId is stored differently in the cookie
+        const userId = cookie.userId; // Adjust this if the userId is stored differently in the cookie
 
         // Retrieve the question from the database
         const currentQuestion = (
@@ -137,10 +136,6 @@ export default (app: any) =>
             )
         ).at(0);
 
-        console.log({
-          selectedAnswer,
-          correctAnswer: currentQuestion.correctAnswer,
-        });
         if (existingAnswer) {
           // If an answer exists, update it
           await db
