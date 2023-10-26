@@ -29,7 +29,7 @@ export default (app: any) =>
                       alt="Sample image"
                     />
                   </div>
-                  <div class="mb-12 md:mb-0 md:w-8/12 lg:w-5/12 xl:w-5/12 self-start mt-4">
+                  <div class="mb-12 md:mb-0 md:w-8/12 lg:w-5/12 xl:w-5/12">
                     {cookie.userId ? (
                       <GoToQuiz userName={getUserName(cookie.userId)} />
                     ) : (
