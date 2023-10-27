@@ -4,3 +4,6 @@ export const getUserName = (userId: string): string =>
 
 export const getUserLocation = (userId: string): string =>
     userId.split('#')[1];
+
+    export const getUserHash = (userId: string): string =>
+    userId.split('#')[2];

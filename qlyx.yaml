@@ -1,0 +1,16 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: qlyx
+spec:
+  template:
+    spec:
+      containers:
+        - image: gcr.io/max-temporary-culture-quiz/qlyx:1.0.1
+          env:
+            - name: DATABASE_URL
+              value: "libsql://beth-hackertalk-littlehelicase.turso.io"
+            - name: DATABASE_PASSWORD
+              value: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTI0VDE4OjM1OjMxLjMxMzE1MTExWiIsImlkIjoiZWFlYmRlYWEtNTk1ZC0xMWVlLWExZmQtMTYzNzBjNmRiN2IyIn0.HXmtmI8itWuhNhXxgXhhZog8Pvb4-cz4pRb77j_bY4DKZ7DOpe9gw8J9BbJQj0ljus77ghndQQBZJxnLBDg6AQ"
+          ports:
+            - containerPort: 3000

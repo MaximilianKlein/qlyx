@@ -1,0 +1,12 @@
+config:
+  target: 'https://qlyx-gszrxaqhhq-ey.a.run.app'
+  phases:
+    - duration: 60
+      arrivalRate: 100
+
+scenarios:
+  - flow:
+      - get:
+          url: '/quiz-content?client-question=1'
+          headers:
+            cookie: 'userId=Max#DE#6c855'

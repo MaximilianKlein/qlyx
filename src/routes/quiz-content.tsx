@@ -136,6 +136,7 @@ export default (app: any) =>
             )
         ).at(0);
 
+        console.log({selectedAnswer, correctAnswer: currentQuestion.correctAnswer - 1});
         if (existingAnswer) {
           // If an answer exists, update it
           await db
@@ -158,7 +159,7 @@ export default (app: any) =>
             questionId: questionIndex,
             answer: selectedAnswer,
             time: secondsSinceStart,
-            correct: selectedAnswer + 1 == currentQuestion.correctAnswer - 1,
+            correct: selectedAnswer == currentQuestion.correctAnswer - 1,
           });
         }
 

@@ -5,11 +5,12 @@ export const NameForm = () => {
     <form hx-post="/">
         <h3>Please enter your name</h3>
         <div class="relative mb-6" data-te-input-wrapper-init>
-            <input type="text" name="name" class="peer block min-h-[auto] w-full rounded border-0 bg-transparent px-3 py-[0.32rem] leading-[2.15] outline-none transition-all duration-200 ease-linear" placeholder="Name" />
+            <input type="text" name="name" class="peer block min-h-[auto] bg-[#EDEBE7] w-full rounded-lg border px-3 py-[0.32rem] leading-[2.15] outline-none transition-all duration-200 ease-linear" placeholder="Name" />
         </div>
 
         <div class="relative mb-6">
-            <select name="country" class="block w-full rounded border bg-white px-3 py-2 leading-[2.15] outline-none transition-all duration-200 ease-linear">
+            <label for="country">Please choose your location</label>
+            <select name="country" class="block w-full rounded-lg border bg-[#EDEBE7] px-3 py-2 leading-[2.15] outline-none transition-all duration-200 ease-linear">
                 <option value="PT">🇵🇹 Lisbon</option>
                 <option value="DE">🇩🇪 Hamburg</option>
                 <option value="INT">🌍 International</option>

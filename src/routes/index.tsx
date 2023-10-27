@@ -19,13 +19,13 @@ export default (app: any) =>
       return (
         <BaseHtml>
           <body>
-            <section class="h-screen">
+            <section class="h-screen p-7">
               <div class="h-full">
-                <div class="g-6 flex h-full flex-wrap items-center justify-center lg:justify-between">
+                <div class="g-4 flex h-full flex-wrap items-center justify-center lg:justify-evenly">
                   <div class="shrink-1 mb-12 grow-0 basis-auto md:mb-0 md:w-9/12 md:shrink-0 lg:w-6/12 xl:w-6/12">
                     <img
                       src="/public/hackertalk-quiz.webp"
-                      class="w-full"
+                      class="w-full rounded border"
                       alt="Sample image"
                     />
                   </div>
