@@ -60,6 +60,10 @@ This GIF should explain quite well how the Quiz should work. On the let is a use
 
 The leaderboard can be found under <http://localhost:3000/ldb>. You can protect the leaderboard, then you will need the `ADM_PWD` cookie similar to the `/backend/adm` page.
 
+### Example deployment
+
+You can play around with it on <https://qlyx.onrender.com/> the `ADM_PWD` is `pwd`.
+
 ## Deploy
 
 ‼️ The current version does poll a lot, so you should have a decent amount of compute. Every user polls every second. I might add some caching in future versions.
