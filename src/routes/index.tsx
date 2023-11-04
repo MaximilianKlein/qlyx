@@ -1,6 +1,5 @@
 import * as elements from "typed-html";
 import { BaseHtml } from "../html";
-import { Header } from "../components/Header";
 import { NameForm } from "../components/NameForm";
 import { GoToQuiz } from "../components/GoToQuiz";
 import { t } from "elysia";
@@ -8,6 +7,7 @@ import crypto from "crypto";
 import { db } from "../db/db";
 import { user } from "../db/schema";
 import { getUserName } from "../user";
+import { locationConfig } from "../config";
 
 const generateSecret = (length = 10) => {
   return crypto.randomBytes(length).toString("hex").substring(0, length);
@@ -24,7 +24,7 @@ export default (app: any) =>
                 <div class="g-4 flex h-full flex-wrap items-center justify-center lg:justify-evenly">
                   <div class="shrink-1 mb-12 grow-0 basis-auto md:mb-0 md:w-9/12 md:shrink-0 lg:w-6/12 xl:w-6/12">
                     <img
-                      src="/public/hackertalk-quiz.webp"
+                      src="/public/logo.png"
                       class="w-full rounded border"
                       alt="Sample image"
                     />
@@ -71,7 +71,8 @@ export default (app: any) =>
         },
         body: t.Object({
           name: t.String(),
-          country: t.String(),
+          ...(locationConfig().length !== 0
+           ? { location: t.String() } : {} ),
         }),
       }
     );

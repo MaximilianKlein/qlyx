@@ -136,7 +136,6 @@ export default (app: any) =>
             )
         ).at(0);
 
-        console.log({selectedAnswer, correctAnswer: currentQuestion.correctAnswer - 1});
         if (existingAnswer) {
           // If an answer exists, update it
           await db

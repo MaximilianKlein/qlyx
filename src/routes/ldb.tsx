@@ -1,10 +1,11 @@
 import * as elements from "typed-html";
 import { BaseHtml } from "../html";
-import { Question, question, user } from "../db/schema";
+import { user } from "../db/schema";
 import { db } from "../db/db";
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { answer } from "../db/schema";
 import { getUserHash, getUserLocation, getUserName } from "../user";
+import { adminPassword, protectLeaderboard } from "../config";
 
 const getTrophies = (place:number) => {
     if (place === 1) {
@@ -32,7 +33,7 @@ const LeaderboardEntry = (entry:{userId: string, correctAnswers: number, place:n
 
 export default (app: any) => app
   .get('/', async ({ cookie, set }:any) => {
-    if (cookie.admpwd !== 'hackertalk-quiz') {
+    if (protectLeaderboard() && cookie.admpwd !== adminPassword()) {
         set.status = 401;
         return <div>You are not allowed here, go away!</div>
     }

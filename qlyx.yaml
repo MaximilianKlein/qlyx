@@ -1,3 +1,4 @@
+## if you want to run this on cloud run.
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -6,11 +7,17 @@ spec:
   template:
     spec:
       containers:
-        - image: gcr.io/max-temporary-culture-quiz/qlyx:1.0.1
-          env:
+        - image: gcr.io/<your-project>/qlyx:1.0.2
+          env: # should be secret... TODO
             - name: DATABASE_URL
-              value: "libsql://beth-hackertalk-littlehelicase.turso.io"
+              value: "DB-URL"
             - name: DATABASE_PASSWORD
-              value: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTI0VDE4OjM1OjMxLjMxMzE1MTExWiIsImlkIjoiZWFlYmRlYWEtNTk1ZC0xMWVlLWExZmQtMTYzNzBjNmRiN2IyIn0.HXmtmI8itWuhNhXxgXhhZog8Pvb4-cz4pRb77j_bY4DKZ7DOpe9gw8J9BbJQj0ljus77ghndQQBZJxnLBDg6AQ"
+              value: "<ENTER-PWD>"
+            - name: PROTECT_LEADERBOARD
+              value: 1
+            - name: LOCATION_CONFIG # base64 encoded utf8 string to allow for emojis
+              value: "W3sibG9jYXRpb24iOiJERSIsICJsYWJlbCI6ICLwn4ep8J+HqiBIYW1idXJnIn1d" # echo -'[{"location":"DE", "label": "🇩🇪 Hamburg"}]' | base64
+            - name: ADM_PWD
+              value: "<SomePwdToProtectTheBackend>"
           ports:
             - containerPort: 3000
