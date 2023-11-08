@@ -2,9 +2,43 @@ import * as elements from "typed-html";
 import { Quiz } from "../components/Quiz";
 import { Timer } from "../components/Timer";
 import { t } from "elysia";
-import { db } from "../db/db";
-import { answer, question, user } from "../db/schema";
-import { and, desc, eq, isNotNull, isNull, or } from "drizzle-orm";
+import {
+  ActiveQuestion,
+  addAnswer,
+  getActiveQuestion,
+  getCurrentQuestion,
+  getUserAnswer,
+  updateAnswer,
+} from "../db/dbClient";
+import { Cache } from "../cache";
+import { Question } from "../db/schema";
+
+const questionCache = new Cache<ActiveQuestion | undefined>();
+const ttl = 1;
+
+const Trigger = ({questionIndex, active}:{questionIndex:number, active: boolean}) => {
+  return (
+    <div
+      class="hidden"
+      hx-get={`/quiz-content?client-question=${questionIndex}&active=${active}`}
+      hx-trigger="every 1s"
+      hx-swap="outerHTML"
+    >
+      CLICK
+    </div>
+  );
+}
+
+const isActive = (activeQuestion:Question):boolean => {
+  if (!activeQuestion.startTime) {
+    return false;
+  }
+  const endTime = new Date(
+    activeQuestion.startTime.getTime() + activeQuestion.duration * 1000
+  );
+  const now = new Date();
+  return now >= activeQuestion.startTime && now <= endTime;
+}
 
 // TODO Reload => select selected answer
 export default (app: any) =>
@@ -13,19 +47,17 @@ export default (app: any) =>
       try {
         const userId = cookie.userId; // Adjust this if the userId is stored differently in the cookie
         const clientQuestion = query["client-question"];
-        const result = await db
-            .select()
-            .from(question)
-            .leftJoin(answer, and(
-                eq(question.questionId, answer.questionId),
-                eq(answer.userId, userId)
-            ))
-            .where(isNotNull(question.startTime))
-            .orderBy(desc(question.startTime))
-            .limit(1);
+        const clientActive = query["active"];
 
-        const activeQuestion = result[0]?.question;
-        const activeAnswer = result[0]?.answer;
+        const cachedValue = await questionCache.getCacheValue('question', ttl);
+        // if the question and the active state didn't change, return cached result if set
+        if (cachedValue && cachedValue.question.questionId == clientQuestion && !!clientActive === isActive(cachedValue.question)) {
+          return <Trigger questionIndex={clientQuestion} active={clientActive} />
+        }
+        const result = await questionCache.promiseCache('question', () => getActiveQuestion(userId), ttl);
+
+        const activeQuestion = result?.question;
+        const activeAnswer = result?.answer;
 
         if (!activeQuestion || !activeQuestion.startTime) {
           return (
@@ -50,16 +82,6 @@ export default (app: any) =>
           (endTime.getTime() - now.getTime()) / 1000
         );
 
-        const trigger = (
-          <div
-            class="hidden"
-            hx-get={`/quiz-content?client-question=${questionIndex}`}
-            hx-trigger="every 1s"
-            hx-swap="outerHTML"
-          >
-            CLICK
-          </div>
-        );
         const content = cookie.userId ? (
           clientQuestion == questionIndex && active ? (
             <Timer remainingTimer={remainingTimer} />
@@ -80,7 +102,7 @@ export default (app: any) =>
         );
 
         return (
-          trigger +
+          <Trigger questionIndex={questionIndex} active={active} /> +
           "\n" +
           content.replace(" hx-swap-oob ", ` hx-swap-oob="true" `)
         );
@@ -91,19 +113,14 @@ export default (app: any) =>
     })
     .post(
       "/",
-      async ({ body, cookie, set }: any) => {
+      async ({ body, cookie }: any) => {
         const { answer: selectedAnswer, questionIndex } = body;
 
         // Extract userId from the cookie
         const userId = cookie.userId; // Adjust this if the userId is stored differently in the cookie
 
         // Retrieve the question from the database
-        const currentQuestion = (
-          await db
-            .select()
-            .from(question)
-            .where(eq(question.questionId, questionIndex))
-        ).at(0);
+        const currentQuestion = await getCurrentQuestion(questionIndex);
 
         if (!currentQuestion || !currentQuestion.startTime) {
           return <div>Something went wrong 😵"</div>;
@@ -124,39 +141,19 @@ export default (app: any) =>
         );
 
         // Check if an answer already exists for the user and the question
-        const existingAnswer = (
-          await db
-            .select()
-            .from(answer)
-            .where(
-              and(
-                eq(answer.userId, userId),
-                eq(answer.questionId, questionIndex)
-              )
-            )
-        ).at(0);
+        const existingAnswer = await getUserAnswer(questionIndex, userId);
 
         if (existingAnswer) {
           // If an answer exists, update it
-          await db
-            .update(answer)
-            .set({
-              answer: selectedAnswer,
-              time: secondsSinceStart,
-              correct: selectedAnswer == currentQuestion.correctAnswer - 1,
-            })
-            .where(
-              and(
-                eq(answer.userId, userId),
-                eq(answer.questionId, questionIndex)
-              )
-            );
+          await updateAnswer(questionIndex, userId, {
+            selectedAnswer,
+            time: secondsSinceStart,
+            correct: selectedAnswer == currentQuestion.correctAnswer - 1,
+          });
         } else {
           // If no answer exists, insert a new one
-          await db.insert(answer).values({
-            userId: userId,
-            questionId: questionIndex,
-            answer: selectedAnswer,
+          await addAnswer(questionIndex, userId, {
+            selectedAnswer,
             time: secondsSinceStart,
             correct: selectedAnswer == currentQuestion.correctAnswer - 1,
           });

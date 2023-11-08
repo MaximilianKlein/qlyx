@@ -4,10 +4,9 @@ import { NameForm } from "../components/NameForm";
 import { GoToQuiz } from "../components/GoToQuiz";
 import { t } from "elysia";
 import crypto from "crypto";
-import { db } from "../db/db";
-import { user } from "../db/schema";
 import { getUserName } from "../user";
 import { locationConfig } from "../config";
+import { addUser } from "../db/dbClient";
 
 const generateSecret = (length = 10) => {
   return crypto.randomBytes(length).toString("hex").substring(0, length);
@@ -15,7 +14,7 @@ const generateSecret = (length = 10) => {
 
 export default (app: any) =>
   app
-    .get("/", ({ cookie, setCookie }: any) => {
+    .get("/", ({ cookie }: any) => {
       return (
         <BaseHtml>
           <body>
@@ -45,10 +44,10 @@ export default (app: any) =>
     })
     .post(
       "/",
-      async ({ body, setCookie, set }: any) => {
+      async ({ body, set }: any) => {
         const secret = generateSecret(5);
         const userId = `${body.name}#${body.country}#${secret}`;
-        await db.insert(user).values({ userId });
+        await addUser(userId);
         set.headers["Set-Cookie"] = `userId=${userId}; HttpOnly; Max-Age=${
           7 * 86400
         }`;

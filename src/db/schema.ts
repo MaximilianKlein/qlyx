@@ -42,3 +42,5 @@ export const answer = sqliteTable(
     };
   }
 );
+
+export type Answer = InferSelectModel<typeof answer>;

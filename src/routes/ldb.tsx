@@ -1,11 +1,8 @@
 import * as elements from "typed-html";
 import { BaseHtml } from "../html";
-import { user } from "../db/schema";
-import { db } from "../db/db";
-import { desc, eq, sql } from "drizzle-orm";
-import { answer } from "../db/schema";
 import { getUserHash, getUserLocation, getUserName } from "../user";
 import { adminPassword, protectLeaderboard } from "../config";
+import { getLeaderboard } from "../db/dbClient";
 
 const getTrophies = (place:number) => {
     if (place === 1) {
@@ -37,15 +34,7 @@ export default (app: any) => app
         set.status = 401;
         return <div>You are not allowed here, go away!</div>
     }
-    const leaderboard = (await db.select({
-        userId: user.userId,
-        correctAnswers: sql<number>`sum(${answer.correct})`,
-        answers: sql<number>`count(${answer.correct})`,
-    })
-        .from(user)
-        .leftJoin(answer, eq(user.userId, answer.userId))
-        .groupBy(user.userId)
-        .orderBy(desc(sql<number>`sum(${answer.correct})`)));
+    const leaderboard = await getLeaderboard();
     
     return (
       <BaseHtml>
