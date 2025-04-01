@@ -23,7 +23,7 @@
     "@elysiajs/static": "^0.7.0",
     "@libsql/client": "^0.3.4",
     "@sinclair/typebox": "^0.31.22",
-    "better-sqlite3": "^9.0.0",
+    "better-sqlite3": "^11.0.0",
     "drizzle-orm": "^0.28.6",
     "elysia": "^0.7.17",
     "elysia-autoroutes": "^0.4.0",
